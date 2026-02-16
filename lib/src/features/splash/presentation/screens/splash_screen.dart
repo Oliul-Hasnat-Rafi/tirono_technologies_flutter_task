@@ -39,9 +39,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     ref.listen<SplashScreenState>(splashScreenProvider, (previous, next) {
       if (next.canNavigate) {
         final notifier = ref.read(splashScreenProvider.notifier);
-        if (notifier.isAuthenticated) {
+        if (notifier.isAuthenticated && !notifier.isPatientAuthenticated) {
           context.go(AppPaths.home);
-        } else {
+        }
+        else if (notifier.isAuthenticated && notifier.isPatientAuthenticated) {
+          context.go(AppPaths.patient);
+        }
+        else {
           context.go(AppPaths.auth);
         }
       }

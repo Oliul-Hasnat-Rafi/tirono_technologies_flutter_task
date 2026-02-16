@@ -4,6 +4,7 @@ import '../../../../core/providers/app_data_provider.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/providers/theme_provider.dart';
 import '../../../../../components.dart';
+import '../../../auth/presentation/providers/authentication_provider.dart';
 
 /// Splash screen state
 class SplashScreenState {
@@ -62,6 +63,7 @@ class SplashScreenNotifier extends StateNotifier<SplashScreenState> {
 
   /// Check if user is authenticated
   bool get isAuthenticated => _ref.read(authProvider).authToken != null;
+  bool get isPatientAuthenticated => _ref.read(authProvider).user?.role == UserRole.patient.name;
 }
 
 /// Splash screen provider

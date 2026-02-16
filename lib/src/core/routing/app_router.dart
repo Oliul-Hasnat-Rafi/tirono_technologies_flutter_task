@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/auth/presentation/providers/authentication_provider.dart';
 import '../../features/auth/presentation/screens/authentication_wrapper_screen.dart';
 
-import '../../features/home/presentation/view/home_screen.dart';
+import '../../features/home/presentation/screen/home_screen.dart';
+import '../../features/patient/presentation/screen/patient_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../providers/auth_provider.dart';
 
@@ -13,6 +15,7 @@ class AppPaths {
   static const splash = '/';
   static const auth = '/auth';
   static const home = '/home';
+  static const patient = '/patient';
 }
 
 /// Global navigator key
@@ -32,7 +35,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isSplashRoute = state.matchedLocation == AppPaths.splash;
 
       if (isSplashRoute) return null;
-      if (isAuthenticated && !isAuthRoute) return AppPaths.home;
+      if (isAuthenticated && !isAuthRoute && authState.user?.role == UserRole.patient.name) return AppPaths.patient;
+      if (isAuthenticated && !isAuthRoute && authState.user?.role == UserRole.doctor.name) return AppPaths.home;
       if (!isAuthenticated && isAuthRoute) return AppPaths.auth;
       
       return null;
@@ -61,11 +65,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppPaths.home,
         pageBuilder: (context, state) => _buildPageWithFadeTransition(
-          child: const HomeScreen(),
+          child:  HomeScreen(),
           state: state,
         ),
       ),
 
+      // Patient
+      GoRoute(
+        path: AppPaths.patient,
+        pageBuilder: (context, state) => _buildPageWithFadeTransition(
+          child:  PatientScreen(),
+          state: state,
+        ),
+      ),
 
 
      

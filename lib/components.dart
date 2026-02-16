@@ -36,6 +36,9 @@ double get defaultBorderWidth1 => 1.sp;
 /// Border width 2.sp
 double get defaultBorderWidth2 => 2.sp;
 
+/// Border radius
+double get defaultborder => 12.sp;
+
 //! ------------------------------------------------------- Animation & Duration
 /// Animation curve
 const Curve defaultCurve = Curves.easeInOut;
