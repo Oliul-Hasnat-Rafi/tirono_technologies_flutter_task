@@ -1,14 +1,14 @@
 # 📱 Tirono Technologies Flutter Task
 
-A comprehensive Flutter application demonstrating modern mobile development practices, including robust authentication, role-based access control, and location services.
+A comprehensive Flutter application demonstrating modern mobile development practices, including robust authentication, role-based access control, and real-time location services.
 
 ---
 
 ## 🎥 Demo Video
 
-> Click to play the demo video:
+▶ Click to play the demo video:
 
-[https://drive.google.com/file/d/1bAFZ7lcLmnQ6PSg8qqTl_kfp85f-n3qU/view?usp=sharing]()
+[https://drive.google.com/file/d/1bAFZ7lcLmnQ6PSg8qqTl_kfp85f-n3qU/view?usp=sharing](https://drive.google.com/file/d/1bAFZ7lcLmnQ6PSg8qqTl_kfp85f-n3qU/view?usp=sharing)
 
 ---
 
@@ -65,19 +65,19 @@ A comprehensive Flutter application demonstrating modern mobile development prac
 
 ### ⚙️ Installation
 
-1️⃣ **Clone the repository**
+#### 1️⃣ Clone the repository
 
 ```bash
 git clone https://github.com/Oliul-Hasnat-Rafi/tirono_technologies_flutter_task.git
 ```
 
-2️⃣ **Install dependencies**
+#### 2️⃣ Install dependencies
 
 ```bash
 flutter pub get
 ```
 
-3️⃣ **Run the application**
+#### 3️⃣ Run the application
 
 ```bash
 flutter run
@@ -110,14 +110,15 @@ flutter run
 
 **Oliul Hasnat Rafi**
 Flutter Developer
+
 🔗 GitHub: [https://github.com/Oliul-Hasnat-Rafi](https://github.com/Oliul-Hasnat-Rafi)
 
 ---
 
-## ⭐ If you like this project
+## ⭐ Support
 
-Give it a ⭐ and feel free to fork & contribute!
+If you like this project, give it a ⭐ and feel free to fork & contribute!
 
 ---
 
-🔥 **This README is recruiter-ready, task-reviewer-friendly, and
+🔥 This project demonstrates real-world Flutter architecture, clean code practices, and production-ready develo
