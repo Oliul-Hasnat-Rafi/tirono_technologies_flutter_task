@@ -4,17 +4,16 @@ A comprehensive Flutter application demonstrating modern mobile development prac
 
 ## Demo Video
 
-<video src="assets/videos/demo.mp4" controls width="100%"></video>
-
-> If the video does not play, you can [download/open it directly](assets/videos/demo.mp4).
+<video width="100%" controls>
+  <source src="assets/videos/demo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 ## Features
 
 - **Advanced Authentication**: 
   - Email & Password Login/Signup.
   - Role-based registration (Doctor & Patient).
-  - Google Sign-In integration.
-  - Password Reset functionality.
   - Form validation with error handling.
 
 - **Role-Based Access Control**:
