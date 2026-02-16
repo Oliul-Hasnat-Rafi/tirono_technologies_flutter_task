@@ -177,13 +177,7 @@ class AuthenticationWrapperScreen extends ConsumerWidget {
                                               TextInputType.visiblePassword,
                                           hintText: 'Enter your password',
                                           svg: AppAssets.lock,
-                                          validator: (String? value) =>
-                                               passwordValidation(
-                                                      value,
-                                                      showDetails:
-                                                          state.isLogin ==
-                                                              false,
-                                                    )
+                                          
                                            
                                         ),
                                       ],
