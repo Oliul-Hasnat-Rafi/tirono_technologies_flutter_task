@@ -5,7 +5,7 @@ A comprehensive Flutter application demonstrating modern mobile development prac
 ## Demo Video
 
 <video width="100%" controls>
-  <source src="assets/videos/demo.mp4" type="video/mp4">
+  <source src="https://github.com/oliulhasnat/tirono_flutter_task/raw/main/media/demo.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
