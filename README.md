@@ -4,7 +4,9 @@ A comprehensive Flutter application demonstrating modern mobile development prac
 
 ## Demo Video
 
-<video src="assets/svg/video/Screenrecorder-2026-02-16-15-42-48-149.mp4" controls width="100%"></video>
+<video src="assets/videos/demo.mp4" controls width="100%"></video>
+
+> If the video does not play, you can [download/open it directly](assets/videos/demo.mp4).
 
 ## Features
 
