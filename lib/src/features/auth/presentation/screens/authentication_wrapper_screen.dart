@@ -178,14 +178,13 @@ class AuthenticationWrapperScreen extends ConsumerWidget {
                                           hintText: 'Enter your password',
                                           svg: AppAssets.lock,
                                           validator: (String? value) =>
-                                              !kDebugMode
-                                                  ? passwordValidation(
+                                               passwordValidation(
                                                       value,
                                                       showDetails:
                                                           state.isLogin ==
                                                               false,
                                                     )
-                                                  : null,
+                                           
                                         ),
                                       ],
                                     ),

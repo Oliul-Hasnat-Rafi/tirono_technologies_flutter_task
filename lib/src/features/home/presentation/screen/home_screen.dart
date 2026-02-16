@@ -274,9 +274,16 @@ class _VitalCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: cs.onSecondaryContainer,
+        gradient: LinearGradient(
+          colors: [
+            accentColor.withOpacity(0.05),
+            accentColor.withOpacity(0.01),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: cs.onTertiaryContainer),
+        border: Border.all(color: accentColor.withOpacity(0.8), width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,7 +295,7 @@ class _VitalCard extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  color: accentColor,
+                  color: cs.onSurfaceVariant,
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -299,7 +306,7 @@ class _VitalCard extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-              color: accentColor,
+              color: cs.onSurfaceVariant,
               fontSize: 28.sp,
               fontWeight: FontWeight.bold,
             ),
@@ -307,10 +314,7 @@ class _VitalCard extends StatelessWidget {
           SizedBox(height: 2.h),
           Text(
             unit,
-            style: TextStyle(
-              color: accentColor.withOpacity(0.7),
-              fontSize: 12.sp,
-            ),
+            style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12.sp),
           ),
         ],
       ),
@@ -342,13 +346,13 @@ class _ECGSection extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 30.h),
           SizedBox(
             height: 80.h,
             width: double.infinity,
             child: CustomPaint(painter: _ECGPainter(color: cs.outlineVariant)),
           ),
-          SizedBox(height: 8.h),
+
           Center(
             child: Text(
               'Normal Sinus Rhythm',
@@ -431,39 +435,49 @@ class _PatientPortalButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 22.h, horizontal: 20.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [cs.secondary, cs.onSecondary],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
+        color: cs.secondary,
+        // gradient: LinearGradient(
+        //   colors: [cs.secondary, cs.onSecondary],
+        //   begin: Alignment.centerLeft,
+        //   end: Alignment.centerRight,
+        // ),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
             color: cs.secondary.withOpacity(0.4),
-            blurRadius: 12,
+
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        children: [
-          Text(
-            'Patient Portal',
-            style: TextStyle(
-              color: cs.onSurface,
-              fontSize: 20.sp,
-              fontWeight: FontWeight.bold,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.pushToPatient(),
+          borderRadius: BorderRadius.circular(20.r),
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 22.h, horizontal: 20.w),
+            child: Column(
+              children: [
+                Text(
+                  'Patient Portal',
+                  style: TextStyle(
+                    color: cs.onPrimary,
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                Text(
+                  'Access your health records, vitals, and appointments',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: cs.onPrimary, fontSize: 13.sp),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 6.h),
-          Text(
-            'Access your health records, vitals, and appointments',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13.sp),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -515,7 +529,7 @@ class _ProviderPortalSection extends StatelessWidget {
                   bgColor: cs.primaryFixed,
                   borderColor: cs.onPrimaryFixed,
                   title: 'Nurse',
-                  subtitle: 'Patient Care\nAccess',
+                  subtitle: 'Patient Care Access',
                 ),
               ),
             ],
@@ -564,7 +578,7 @@ class _RepositorySection extends StatelessWidget {
                     bgColor: cs.primaryFixedDim,
                     borderColor: cs.onPrimaryFixedVariant,
                     title: 'Internal',
-                    subtitle: 'EMR System\nRecords',
+                    subtitle: 'EMR System Records',
                   ),
                 ),
               ),
@@ -612,7 +626,7 @@ class _PortalCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 18.h, horizontal: 12.w),
       decoration: BoxDecoration(
-        color: bgColor,
+        color: bgColor.withOpacity(0.2),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: borderColor.withOpacity(0.5)),
       ),
@@ -623,8 +637,7 @@ class _PortalCard extends StatelessWidget {
             height: 56.w,
             decoration: BoxDecoration(
               color: bgColor,
-              borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(color: borderColor.withOpacity(0.4)),
+              borderRadius: BorderRadius.circular(50.r),
             ),
             child: Icon(icon, color: iconColor, size: 28.sp),
           ),
@@ -657,39 +670,42 @@ class _DashboardButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 22.h, horizontal: 20.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [cs.tertiary, cs.onTertiary],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
+        color: cs.secondary,
+        // gradient: LinearGradient(
+        //   colors: [cs.tertiary, cs.onTertiary],
+        //   begin: Alignment.centerLeft,
+        //   end: Alignment.centerRight,
+        // ),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: cs.tertiary.withOpacity(0.4),
-            blurRadius: 12,
+            color: cs.secondary.withOpacity(0.4),
+            // blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        children: [
-          Text(
-            'Dashboard',
-            style: TextStyle(
-              color: cs.onSurface,
-              fontSize: 20.sp,
-              fontWeight: FontWeight.bold,
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 22.h, horizontal: 20.w),
+        child: Column(
+          children: [
+            Text(
+              'Dashboard',
+              style: TextStyle(
+                color: cs.onPrimary,
+                fontSize: 20.sp,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            'View all patient records with sidebar navigation',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13.sp),
-          ),
-        ],
+            SizedBox(height: 6.h),
+            Text(
+              'View all patient records with sidebar navigation',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: cs.onPrimary, fontSize: 13.sp),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -10,6 +10,7 @@ import '../../features/home/presentation/screen/home_screen.dart';
 import '../../features/patient/presentation/screen/patient_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../providers/auth_provider.dart';
+import 'go_router_refresh_stream.dart';
 
 /// Route paths
 class AppPaths {
@@ -24,15 +25,17 @@ class AppPaths {
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
-  final isAuthenticated = authState.authToken != null;
+  final authNotifier = ref.read(authProvider.notifier);
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: AppPaths.splash,
     debugLogDiagnostics: true,
-
+    refreshListenable: GoRouterRefreshStream(authNotifier.stream),
     redirect: (context, state) {
+      final authState = ref.read(authProvider);
+      final isAuthenticated = authState.authToken != null;
+
       final isAuthRoute = state.matchedLocation == AppPaths.auth;
       final isSplashRoute = state.matchedLocation == AppPaths.splash;
       final isMemberRoute = state.matchedLocation == AppPaths.member;

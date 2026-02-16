@@ -11,7 +11,7 @@ class AppColors {
       primaryContainer: Color(0xFFE8EAF6),
       onPrimaryContainer: Color(0xFFBBC5D9),
 
-      secondary: Color(0xFF1976D2),
+      secondary: Color(0xFF1A3EBE),
       onSecondary: Color(0xFF42A5F5),
       secondaryContainer: Color(0xFFECEFF1),
       onSecondaryContainer: Color(0xFFE3E8F0),
