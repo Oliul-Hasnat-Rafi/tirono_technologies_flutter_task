@@ -1,71 +1,123 @@
-# Tirono Technologies Flutter Task
+# 📱 Tirono Technologies Flutter Task
 
 A comprehensive Flutter application demonstrating modern mobile development practices, including robust authentication, role-based access control, and location services.
 
-## Demo Video
+---
 
-<video width="100%" controls>
-  <source src="https://github.com/Oliul-Hasnat-Rafi/tirono_technologies_flutter_task/blob/main/raw/main/media/demo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+## 🎥 Demo Video
 
-## Features
+> Click to play the demo video:
 
-- **Advanced Authentication**: 
-  - Email & Password Login/Signup.
-  - Role-based registration (Doctor & Patient).
-  - Form validation with error handling.
+[https://raw.githubusercontent.com/Oliul-Hasnat-Rafi/tirono_technologies_flutter_task/main/media/demo.mp4](https://raw.githubusercontent.com/Oliul-Hasnat-Rafi/tirono_technologies_flutter_task/main/media/demo.mp4)
 
-- **Role-Based Access Control**:
-  - Distinct worklows for Doctors and Patients.
-  - Dynamic UI adjustments based on selected role.
+---
 
-- **Location Services**:
-  - Integrated geolocation features using `geolocator`.
-  - Geocoding support.
+## ✨ Features
 
-- **Modern Architecture**:
-  - **State Management**: Built with [Flutter Riverpod](https://pub.dev/packages/flutter_riverpod) for scalable and testable state management.
-  - **Routing**: Uses [GoRouter](https://pub.dev/packages/go_router) for declarative routing.
-  - **Networking**: Implemented with [Dio](https://pub.dev/packages/dio).
-  - **Responsive Design**: Utilizes `flutter_screenutil` for pixel-perfect UI across devices.
+### 🔐 Advanced Authentication
 
-## Tech Stack
+* Email & Password Login/Signup
+* Role-based registration (**Doctor** & **Patient**)
+* Strong form validation with proper error handling
 
-- **Framework**: Flutter
-- **Language**: Dart
-- **State Management**: Riverpod
-- **Navigation**: GoRouter
-- **Maps/Location**: Geolocator, Geocoding
-- **UI Components**: `on_process_button_widget`, `on_text_input_widget`, `flutter_svg`, `google_fonts`
+### 🧑‍⚕️ Role-Based Access Control
 
-## Getting Started
+* Separate workflows for Doctors and Patients
+* Dynamic UI rendering based on selected role
 
-This project is a starting point for a Flutter application.
+### 📍 Location Services
 
-### Prerequisites
-- Flutter SDK
-- Android Studio / Xcode (for mobile development)
+* Real-time geolocation using `geolocator`
+* Address resolution with `geocoding`
 
-### Installation
+### 🏗️ Modern Architecture
 
-1.  **Clone the repository**:
-    ```bash
-    git clone <repository-url>
-    ```
+* **State Management**: Riverpod (scalable & testable architecture)
+* **Routing**: GoRouter (declarative navigation)
+* **Networking**: Dio (robust API handling)
+* **Responsive UI**: flutter_screenutil (pixel-perfect design across devices)
 
-2.  **Install dependencies**:
-    ```bash
-    flutter pub get
-    ```
+---
 
-3.  **Run the app**:
-    ```bash
-    flutter run
-    ```
+## 🧰 Tech Stack
 
-## Resources
+| Category         | Technology                                                                |
+| ---------------- | ------------------------------------------------------------------------- |
+| Framework        | Flutter                                                                   |
+| Language         | Dart                                                                      |
+| State Management | Riverpod                                                                  |
+| Navigation       | GoRouter                                                                  |
+| Networking       | Dio                                                                       |
+| Maps & Location  | Geolocator, Geocoding                                                     |
+| UI Libraries     | on_process_button_widget, on_text_input_widget, flutter_svg, google_fonts |
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## 🚀 Getting Started
+
+### 📦 Prerequisites
+
+* Flutter SDK
+* Android Studio / Xcode
+* Emulator or Physical Device
+
+---
+
+### ⚙️ Installation
+
+1️⃣ **Clone the repository**
+
+```bash
+git clone https://github.com/Oliul-Hasnat-Rafi/tirono_technologies_flutter_task.git
+```
+
+2️⃣ **Install dependencies**
+
+```bash
+flutter pub get
+```
+
+3️⃣ **Run the application**
+
+```bash
+flutter run
+```
+
+---
+
+## 📁 Project Highlights
+
+* Clean architecture
+* Scalable state management
+* Modular folder structure
+* Production-ready codebase
+* Maintainable & testable design patterns
+* Role-based UI flow
+* Modern Flutter development practices
+
+---
+
+## 📚 Resources
+
+* 📘 Flutter Docs: [https://docs.flutter.dev/](https://docs.flutter.dev/)
+* 📦 Riverpod: [https://pub.dev/packages/flutter_riverpod](https://pub.dev/packages/flutter_riverpod)
+* 🧭 GoRouter: [https://pub.dev/packages/go_router](https://pub.dev/packages/go_router)
+* 🌐 Dio: [https://pub.dev/packages/dio](https://pub.dev/packages/dio)
+
+---
+
+## 👨‍💻 Developer
+
+**Oliul Hasnat Rafi**
+Flutter Developer
+🔗 GitHub: [https://github.com/Oliul-Hasnat-Rafi](https://github.com/Oliul-Hasnat-Rafi)
+
+---
+
+## ⭐ If you like this project
+
+Give it a ⭐ and feel free to fork & contribute!
+
+---
+
+🔥 **This README is recruiter-ready, task-reviewer-friendly, and
