@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tirono_technologies_flutter_task/src/features/member/presentation/screen/member_screen.dart';
 
 import '../../features/auth/presentation/providers/authentication_provider.dart';
 import '../../features/auth/presentation/screens/authentication_wrapper_screen.dart';
@@ -16,6 +17,7 @@ class AppPaths {
   static const auth = '/auth';
   static const home = '/home';
   static const patient = '/patient';
+  static const member = '/member';
 }
 
 /// Global navigator key
@@ -29,16 +31,25 @@ final routerProvider = Provider<GoRouter>((ref) {
     navigatorKey: rootNavigatorKey,
     initialLocation: AppPaths.splash,
     debugLogDiagnostics: true,
-    
+
     redirect: (context, state) {
       final isAuthRoute = state.matchedLocation == AppPaths.auth;
       final isSplashRoute = state.matchedLocation == AppPaths.splash;
+      final isMemberRoute = state.matchedLocation == AppPaths.member;
 
       if (isSplashRoute) return null;
-      if (isAuthenticated && !isAuthRoute && authState.user?.role == UserRole.patient.name) return AppPaths.patient;
-      if (isAuthenticated && !isAuthRoute && authState.user?.role == UserRole.doctor.name) return AppPaths.home;
+      // Allow navigation to sub-routes like /member without redirecting
+      if (isMemberRoute) return null;
+      if (isAuthenticated &&
+          !isAuthRoute &&
+          authState.user?.role == UserRole.patient.name)
+        return AppPaths.patient;
+      if (isAuthenticated &&
+          !isAuthRoute &&
+          authState.user?.role == UserRole.doctor.name)
+        return AppPaths.home;
       if (!isAuthenticated && isAuthRoute) return AppPaths.auth;
-      
+
       return null;
     },
 
@@ -64,23 +75,23 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Home
       GoRoute(
         path: AppPaths.home,
-        pageBuilder: (context, state) => _buildPageWithFadeTransition(
-          child:  HomeScreen(),
-          state: state,
-        ),
+        pageBuilder: (context, state) =>
+            _buildPageWithFadeTransition(child: HomeScreen(), state: state),
       ),
 
       // Patient
       GoRoute(
         path: AppPaths.patient,
-        pageBuilder: (context, state) => _buildPageWithFadeTransition(
-          child:  PatientScreen(),
-          state: state,
-        ),
+        pageBuilder: (context, state) =>
+            _buildPageWithFadeTransition(child: PatientScreen(), state: state),
       ),
 
-
-     
+      // Member
+      GoRoute(
+        path: AppPaths.member,
+        pageBuilder: (context, state) =>
+            _buildPageWithFadeTransition(child: MemberScreen(), state: state),
+      ),
     ],
   );
 });
@@ -115,14 +126,9 @@ CustomTransitionPage _buildPageWithSlideTransition({
       const end = Offset.zero;
       const curve = Curves.easeInOutCubic;
 
-      var tween = Tween(begin: begin, end: end).chain(
-        CurveTween(curve: curve),
-      );
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-      return SlideTransition(
-        position: animation.drive(tween),
-        child: child,
-      );
+      return SlideTransition(position: animation.drive(tween), child: child);
     },
   );
 }

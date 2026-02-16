@@ -15,6 +15,7 @@ extension NavigationExtensions on BuildContext {
   // Push (keep in stack)
   void pushToAuth() => push(AppPaths.auth);
   void pushToHome() => push(AppPaths.home);
+  void pushToMember() => push(AppPaths.member);
 
   void pushToProductDetails(String id) => push('/product/$id');
 

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:tirono_technologies_flutter_task/src/core/routing/routes.dart';
 import 'package:tirono_technologies_flutter_task/src/core/utils/dev_functions/dev_scaffold.dart';
+
+import '../../../../core/routing/app_router.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -120,10 +124,7 @@ class _HeaderSection extends StatelessWidget {
           RichText(
             text: TextSpan(
               text: 'Powered by ',
-              style: TextStyle(
-                color: cs.onSurfaceVariant,
-                fontSize: 13.sp,
-              ),
+              style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13.sp),
               children: [
                 TextSpan(
                   text: 'InTEAM Technologies',
@@ -160,8 +161,11 @@ class _LiveVitalsSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.monitor_heart_outlined,
-                  color: cs.onSurfaceVariant, size: 22.sp),
+              Icon(
+                Icons.monitor_heart_outlined,
+                color: cs.onSurfaceVariant,
+                size: 22.sp,
+              ),
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
@@ -237,10 +241,7 @@ class _LiveVitalsSection extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Data streamed from connected wearable devices',
-                  style: TextStyle(
-                    color: cs.tertiaryFixedDim,
-                    fontSize: 11.sp,
-                  ),
+                  style: TextStyle(color: cs.tertiaryFixedDim, fontSize: 11.sp),
                 ),
               ),
             ],
@@ -345,9 +346,7 @@ class _ECGSection extends StatelessWidget {
           SizedBox(
             height: 80.h,
             width: double.infinity,
-            child: CustomPaint(
-              painter: _ECGPainter(color: cs.outlineVariant),
-            ),
+            child: CustomPaint(painter: _ECGPainter(color: cs.outlineVariant)),
           ),
           SizedBox(height: 8.h),
           Center(
@@ -388,8 +387,10 @@ class _ECGPainter extends CustomPainter {
       final startX = i * segmentWidth;
       path.lineTo(startX + segmentWidth * 0.2, midY);
       path.quadraticBezierTo(
-        startX + segmentWidth * 0.28, midY - 8,
-        startX + segmentWidth * 0.35, midY,
+        startX + segmentWidth * 0.28,
+        midY - 8,
+        startX + segmentWidth * 0.35,
+        midY,
       );
       path.lineTo(startX + segmentWidth * 0.4, midY);
       path.lineTo(startX + segmentWidth * 0.43, midY + 6);
@@ -398,8 +399,10 @@ class _ECGPainter extends CustomPainter {
       path.lineTo(startX + segmentWidth * 0.56, midY);
       path.lineTo(startX + segmentWidth * 0.62, midY);
       path.quadraticBezierTo(
-        startX + segmentWidth * 0.72, midY - 12,
-        startX + segmentWidth * 0.82, midY,
+        startX + segmentWidth * 0.72,
+        midY - 12,
+        startX + segmentWidth * 0.82,
+        midY,
       );
       path.lineTo(startX + segmentWidth, midY);
     }
@@ -458,10 +461,7 @@ class _PatientPortalButton extends StatelessWidget {
           Text(
             'Access your health records, vitals, and appointments',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: cs.onSurfaceVariant,
-              fontSize: 13.sp,
-            ),
+            style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13.sp),
           ),
         ],
       ),
@@ -553,14 +553,19 @@ class _RepositorySection extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _PortalCard(
-                  cs: cs,
-                  icon: Icons.folder_open,
-                  iconColor: cs.secondaryFixedDim,
-                  bgColor: cs.primaryFixedDim,
-                  borderColor: cs.onPrimaryFixedVariant,
-                  title: 'Internal',
-                  subtitle: 'EMR System\nRecords',
+                child: InkWell(
+                  onTap: () {
+                    context.pushToMember();
+                  },
+                  child: _PortalCard(
+                    cs: cs,
+                    icon: Icons.folder_open,
+                    iconColor: cs.secondaryFixedDim,
+                    bgColor: cs.primaryFixedDim,
+                    borderColor: cs.onPrimaryFixedVariant,
+                    title: 'Internal',
+                    subtitle: 'EMR System\nRecords',
+                  ),
                 ),
               ),
               SizedBox(width: 12.w),
@@ -636,10 +641,7 @@ class _PortalCard extends StatelessWidget {
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: cs.onSurfaceVariant,
-              fontSize: 11.sp,
-            ),
+            style: TextStyle(color: cs.onSurfaceVariant, fontSize: 11.sp),
           ),
         ],
       ),
@@ -685,10 +687,7 @@ class _DashboardButton extends StatelessWidget {
           Text(
             'View all patient records with sidebar navigation',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: cs.onSurfaceVariant,
-              fontSize: 13.sp,
-            ),
+            style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13.sp),
           ),
         ],
       ),
