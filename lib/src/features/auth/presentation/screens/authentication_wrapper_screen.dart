@@ -20,9 +20,7 @@ import '../../../../widgets/text.dart';
 import '../../../../widgets/toc_and_pp.dart';
 import '../providers/authentication_provider.dart';
 
-/// AuthenticationWrapperScreen
 class AuthenticationWrapperScreen extends ConsumerWidget {
-  /// AuthenticationWrapperScreen Constructor
   const AuthenticationWrapperScreen({super.key});
 
   @override
@@ -71,6 +69,7 @@ class AuthenticationWrapperScreen extends ConsumerWidget {
                               ),
                             ),
                             const CustomSize(fraction: 4),
+
                             CustomAnimatedSize(
                               widthFactor: 1,
                               alignment: Alignment.topCenter,
@@ -79,13 +78,22 @@ class AuthenticationWrapperScreen extends ConsumerWidget {
                                     ? 'Please provide your email to reset your password.'
                                     : state.isLogin!
                                         ? 'Welcome back! Please login to your account.'
-                                        : 'Please provide your email and password to sign up.',
+                                        : 'Create your account to get started.',
                               ),
                             ),
                             const CustomSize(),
-                            //! Name
+
+                            CustomAnimatedSize(
+                              widthFactor: 1,
+                              alignment: Alignment.topCenter,
+                              child: state.isLogin == null
+                                  ? null
+                                  : const _RoleSelector(),
+                            ),
+                            const CustomSize(),
+
                             state.isLogin == false
-                                ? _Heading('Name')
+                                ? const _Heading('Name')
                                 : const SizedBox.shrink(),
                             state.isLogin == false
                                 ? OnTextInputWidgetUserField(
@@ -93,7 +101,7 @@ class AuthenticationWrapperScreen extends ConsumerWidget {
                                     textEditingController: controller.nameC,
                                     showDetailError: true,
                                     keyboardType: TextInputType.name,
-                                    hintText: 'Enter your name',
+                                    hintText: 'Enter your full name',
                                     svg: AppAssets.message,
                                     autofillHints: const <String>[
                                       AutofillHints.name,
@@ -106,8 +114,8 @@ class AuthenticationWrapperScreen extends ConsumerWidget {
                                   )
                                 : const SizedBox.shrink(),
 
-                            //! Email
-                            _Heading('Email'),
+                            // ─── Email Field ───
+                            const _Heading('Email'),
                             OnTextInputWidgetUserField(
                               key: GlobalKey(),
                               textEditingController: controller.emailC,
@@ -123,9 +131,10 @@ class AuthenticationWrapperScreen extends ConsumerWidget {
                                 showDetails: state.isLogin == false,
                               ),
                             ),
-//! Phone
+
+                            // ─── Phone Field (Sign Up only) ───
                             state.isLogin == false
-                                ? _Heading('Phone')
+                                ? const _Heading('Phone')
                                 : const SizedBox.shrink(),
                             state.isLogin == false
                                 ? OnTextInputWidgetUserField(
@@ -145,7 +154,9 @@ class AuthenticationWrapperScreen extends ConsumerWidget {
                                     ),
                                   )
                                 : const SizedBox.shrink(),
-                            //! Password
+
+                            const _DoctorFields(),
+
                             CustomAnimatedSize(
                               alignment: Alignment.topCenter,
                               widthFactor: 1,
@@ -155,7 +166,7 @@ class AuthenticationWrapperScreen extends ConsumerWidget {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
-                                        _Heading('Password'),
+                                        const _Heading('Password'),
                                         OnTextInputWidgetUserField(
                                           key: GlobalKey(),
                                           textEditingController:
@@ -182,6 +193,7 @@ class AuthenticationWrapperScreen extends ConsumerWidget {
 
                             const CustomSize(),
 
+                            // ─── Terms & Conditions ───
                             Align(
                               child: CustomAnimatedSize(
                                 widthFactor: 1,
@@ -198,11 +210,19 @@ class AuthenticationWrapperScreen extends ConsumerWidget {
 
                             const CustomSize(),
 
-                            //! Login Button
-                            const _Login(),
+                            // ─── Dummy Credentials ───
+                            CustomAnimatedSize(
+                              widthFactor: 1,
+                              alignment: Alignment.topCenter,
+                              child: state.isLogin == true
+                                  ? const _CredentialsHint()
+                                  : null,
+                            ),
+
+                            // ─── Submit Button ───
+                            const _LoginButton(),
                             const CustomSize(fraction: 4),
                             const _GroupButton(),
-
                             const _OtherLoginWay(),
                           ],
                         ),
@@ -214,6 +234,200 @@ class AuthenticationWrapperScreen extends ConsumerWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _RoleSelector extends ConsumerWidget {
+  const _RoleSelector();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(authenticationScreenProvider);
+    final controller = ref.watch(authenticationScreenProvider.notifier);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withOpacity(0.35),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(4),
+      child: Row(
+        children: UserRole.values.map((role) {
+          final isSelected = state.selectedRole == role;
+          final isDoctor = role == UserRole.doctor;
+
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => controller.setUserRole(role),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeInOut,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                decoration: BoxDecoration(
+                  color:
+                      isSelected ? colorScheme.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: colorScheme.primary.withOpacity(0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      isDoctor
+                          ? Icons.medical_services_rounded
+                          : Icons.person_rounded,
+                      size: 20,
+                      color: isSelected
+                          ? colorScheme.onPrimary
+                          : colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      isDoctor ? 'Doctor' : 'Patient',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: isSelected
+                            ? colorScheme.onPrimary
+                            : colorScheme.onSurfaceVariant,
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _DoctorFields extends ConsumerWidget {
+  const _DoctorFields();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(authenticationScreenProvider);
+    final controller = ref.watch(authenticationScreenProvider.notifier);
+
+    final showDoctorFields =
+        state.isLogin == false && state.selectedRole == UserRole.doctor;
+
+    return CustomAnimatedSize(
+      widthFactor: 1,
+      alignment: Alignment.topCenter,
+      child: showDoctorFields
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _Heading('Speciality'),
+                OnTextInputWidgetUserField(
+                  key: GlobalKey(),
+                  textEditingController: controller.specialityC,
+                  showDetailError: true,
+                  keyboardType: TextInputType.text,
+                  hintText: 'e.g. Cardiology, Dermatology',
+                  svg: AppAssets.message,
+                  validator: (String? value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Speciality is required';
+                    }
+                    return null;
+                  },
+                ),
+                const _Heading('License Number'),
+                OnTextInputWidgetUserField(
+                  key: GlobalKey(),
+                  textEditingController: controller.licenseC,
+                  showDetailError: true,
+                  keyboardType: TextInputType.text,
+                  hintText: 'Enter your medical license number',
+                  svg: AppAssets.message,
+                  validator: (String? value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'License number is required';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            )
+          : null,
+    );
+  }
+}
+
+
+class _CredentialsHint extends StatelessWidget {
+  const _CredentialsHint();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colorScheme.tertiaryContainer.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: colorScheme.tertiaryContainer,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.info_outline_rounded,
+                  size: 16, color: colorScheme.tertiary),
+              const SizedBox(width: 6),
+              Text(
+                'Demo Credentials',
+                style: textTheme.labelMedium?.copyWith(
+                  color: colorScheme.tertiary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _credRow(context, '🩺 Doctor', 'doctor@test.com', '12345678'),
+          const SizedBox(height: 4),
+          _credRow(context, '👤 Patient', 'patient@test.com', '12345678'),
+        ],
+      ),
+    );
+  }
+
+  Widget _credRow(
+      BuildContext context, String role, String email, String pass) {
+    final textTheme = Theme.of(context).textTheme;
+    final color = Theme.of(context).colorScheme.onSurface.withOpacity(0.7);
+
+    return Text(
+      '$role → $email / $pass',
+      style: textTheme.bodySmall?.copyWith(
+        color: color,
+        fontFamily: 'monospace',
+        fontSize: 11,
       ),
     );
   }
@@ -232,13 +446,17 @@ class _Heading extends StatelessWidget {
   }
 }
 
-class _Login extends ConsumerWidget {
-  const _Login();
+
+class _LoginButton extends ConsumerWidget {
+  const _LoginButton();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.watch(authenticationScreenProvider.notifier);
     final state = ref.watch(authenticationScreenProvider);
+
+    final roleLabel =
+        state.selectedRole == UserRole.doctor ? 'Doctor' : 'Patient';
 
     return OnProcessButtonWidget(
       expandedIcon: true,
@@ -258,14 +476,15 @@ class _Login extends ConsumerWidget {
       },
       child: Text(
         state.isLogin == null
-            ? 'Reset'
+            ? 'Reset Password'
             : state.isLogin!
-                ? 'Login'
-                : 'Sign Up',
+                ? 'Login as $roleLabel'
+                : 'Sign Up as $roleLabel',
       ),
     );
   }
 }
+
 
 class _GroupButton extends ConsumerWidget {
   const _GroupButton();
@@ -285,13 +504,13 @@ class _GroupButton extends ConsumerWidget {
             child: state.isLogin == null
                 ? CustomTextButton(
                     onDone: (_) => controller.setIsLogin(true),
-                    child: Text('Login'),
+                    child: const Text('Login'),
                   )
                 : !state.isLogin!
                     ? null
                     : CustomTextButton(
                         onDone: (_) => controller.setIsLogin(null),
-                        child: Text('Forgot Password'),
+                        child: const Text('Forgot Password'),
                       ),
           ),
           Text(
@@ -316,6 +535,7 @@ class _GroupButton extends ConsumerWidget {
     );
   }
 }
+
 
 class _OtherLoginWay extends StatelessWidget {
   const _OtherLoginWay();
@@ -345,7 +565,6 @@ class _GoogleSignIn extends ConsumerWidget {
     return Align(
       child: CustomAnimatedSize(
         child: OnProcessButtonWidget(
-          // enable: false,
           onTap: () async => controller.googleSignIn(),
           onDone: (success) => controller.requestSuccess(
             success,
