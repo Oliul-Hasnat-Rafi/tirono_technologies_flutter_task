@@ -1,157 +1,161 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:tirono_technologies_flutter_task/src/core/utils/dev_functions/dev_scaffold.dart';
 
-/// Patient record model
-class PatientRecord {
-  final String name;
-  final String id;
-  final int age;
-  final String gender;
-  final String lastVisit;
-  final String diagnosis;
+import '../../data/model/patient_record.dart';
+import '../provider/member_provider.dart';
 
-  const PatientRecord({
-    required this.name,
-    required this.id,
-    required this.age,
-    required this.gender,
-    required this.lastVisit,
-    required this.diagnosis,
-  });
-}
-
-class MemberScreen extends StatefulWidget {
+class MemberScreen extends ConsumerStatefulWidget {
   const MemberScreen({super.key});
 
   @override
-  State<MemberScreen> createState() => _MemberScreenState();
+  ConsumerState<MemberScreen> createState() => _MemberScreenState();
 }
 
-class _MemberScreenState extends State<MemberScreen> {
+class _MemberScreenState extends ConsumerState<MemberScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
-
-  final List<PatientRecord> _patients = const [
-    PatientRecord(
-      name: 'John Doe',
-      id: 'INT-001',
-      age: 45,
-      gender: 'Male',
-      lastVisit: '2024-12-01',
-      diagnosis: 'Hypertension',
-    ),
-    PatientRecord(
-      name: 'Sarah Smith',
-      id: 'INT-002',
-      age: 32,
-      gender: 'Female',
-      lastVisit: '2024-11-28',
-      diagnosis: 'Diabetes Type 2',
-    ),
-    PatientRecord(
-      name: 'Michael Johnson',
-      id: 'INT-003',
-      age: 58,
-      gender: 'Male',
-      lastVisit: '2024-12-05',
-      diagnosis: 'Cardiac Arrhythmia',
-    ),
-    PatientRecord(
-      name: 'Emily Davis',
-      id: 'INT-004',
-      age: 27,
-      gender: 'Female',
-      lastVisit: '2024-11-20',
-      diagnosis: 'Asthma',
-    ),
-    PatientRecord(
-      name: 'Robert Wilson',
-      id: 'INT-005',
-      age: 63,
-      gender: 'Male',
-      lastVisit: '2024-12-03',
-      diagnosis: 'Chronic Back Pain',
-    ),
-  ];
-
-  List<PatientRecord> _filteredPatients = [];
+  late AnimationController _headerAnimController;
+  late Animation<double> _headerFade;
 
   @override
   void initState() {
     super.initState();
-    _filteredPatients = _patients;
-  }
 
-  void _filterPatients(String query) {
-    setState(() {
-      if (query.isEmpty) {
-        _filteredPatients = _patients;
-      } else {
-        _filteredPatients = _patients
-            .where((p) =>
-                p.name.toLowerCase().contains(query.toLowerCase()) ||
-                p.id.toLowerCase().contains(query.toLowerCase()) ||
-                p.diagnosis.toLowerCase().contains(query.toLowerCase()))
-            .toList();
-      }
-    });
+    _headerAnimController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _headerFade = CurvedAnimation(
+      parent: _headerAnimController,
+      curve: Curves.easeOut,
+    );
+    _headerAnimController.forward();
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _headerAnimController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final locationAsync = ref.watch(userLocationProvider);
+    final addressAsync = ref.watch(userAddressProvider);
+    final memberState = ref.watch(memberNotifierProvider);
+    final memberNotifier = ref.read(memberNotifierProvider.notifier);
 
     return DevScaffold(
       child: Scaffold(
-        backgroundColor: colorScheme.surface,
+        backgroundColor: cs.surface,
         body: SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _BackButton(onTap: () => Navigator.of(context).pop()),
+
+              _TopBar(onBack: () => Navigator.of(context).pop(), cs: cs),
 
               Expanded(
                 child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: 8.h),
+                      SizedBox(height: 4.h),
 
-                      const _RepositoryHeader(),
-
-                      SizedBox(height: 16.h),
-
-                      _SearchBar(
-                        controller: _searchController,
-                        onChanged: _filterPatients,
+                      FadeTransition(
+                        opacity: _headerFade,
+                        child: _GradientHeader(cs: cs, tt: tt),
                       ),
 
                       SizedBox(height: 20.h),
 
-                      _RecordsTitle(count: _filteredPatients.length),
+                      locationAsync.when(
+                        data: (pos) {
+                          if (pos == null) {
+                            return _LocationBanner(
+                              cs: cs,
+                              message: 'Location permission denied',
+                              icon: Icons.location_off_rounded,
+                              actionLabel: 'Open Settings',
+                              onAction: () => Geolocator.openAppSettings(),
+                            );
+                          }
+                          final addressText = addressAsync.maybeWhen(
+                            data: (addr) => addr,
+                            orElse: () => null,
+                          );
+                          final displayMessage = addressText != null
+                              ? 'Your location: $addressText'
+                              : 'Your location: ${pos.latitude.toStringAsFixed(4)}, ${pos.longitude.toStringAsFixed(4)}';
+                          return _LocationBanner(
+                            cs: cs,
+                            message: displayMessage,
+                            icon: Icons.my_location_rounded,
+                            isSuccess: true,
+                            isLoading: addressAsync.isLoading,
+                          );
+                        },
+                        loading: () => _LocationBanner(
+                          cs: cs,
+                          message: 'Fetching your location...',
+                          icon: Icons.gps_not_fixed_rounded,
+                          isLoading: true,
+                        ),
+                        error: (_, __) => _LocationBanner(
+                          cs: cs,
+                          message: 'Could not get location',
+                          icon: Icons.gps_off_rounded,
+                        ),
+                      ),
 
-                      SizedBox(height: 12.h),
+                      SizedBox(height: 20.h),
+
+                      _GlassmorphicSearchBar(
+                        controller: _searchController,
+                        onChanged: (query) =>
+                            memberNotifier.filterPatients(query),
+                        cs: cs,
+                      ),
+
+                      SizedBox(height: 20.h),
+
+                      _RecordsHeader(
+                        count: memberState.filteredPatients.length,
+                        cs: cs,
+                      ),
+
+                      SizedBox(height: 14.h),
 
                       ListView.separated(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _filteredPatients.length,
-                        separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                        itemCount: memberState.filteredPatients.length,
+                        separatorBuilder: (_, __) => SizedBox(height: 14.h),
                         itemBuilder: (context, index) {
+                          final patient = memberState.filteredPatients[index];
+                          final distText = locationAsync.maybeWhen(
+                            data: (pos) =>
+                                memberNotifier.getDistanceText(patient, pos),
+                            orElse: () => '',
+                          );
                           return _PatientCard(
-                            patient: _filteredPatients[index],
+                            patient: patient,
+                            index: index,
+                            distanceText: distText,
+                            cs: cs,
+                            tt: tt,
                           );
                         },
                       ),
 
-                      SizedBox(height: 24.h),
+                      SizedBox(height: 32.h),
                     ],
                   ),
                 ),
@@ -164,131 +168,274 @@ class _MemberScreenState extends State<MemberScreen> {
   }
 }
 
-class _BackButton extends StatelessWidget {
-  const _BackButton({required this.onTap});
-  final VoidCallback onTap;
+class _TopBar extends StatelessWidget {
+  const _TopBar({required this.onBack, required this.cs});
+  final VoidCallback onBack;
+  final ColorScheme cs;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
-      child: TextButton.icon(
-        onPressed: onTap,
-        icon: Icon(Icons.arrow_back, color: colorScheme.primary, size: 20),
-        label: Text(
-          'Back',
-          style: TextStyle(
-            color: colorScheme.primary,
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w500,
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+      child: Row(
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: onBack,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: cs.primary.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: cs.primary,
+                      size: 18,
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      'Back',
+                      style: TextStyle(
+                        color: cs.primary,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-        style: TextButton.styleFrom(
-          padding: EdgeInsets.symmetric(horizontal: 8.w),
-        ),
+          const Spacer(),
+          Container(
+            padding: EdgeInsets.all(8.w),
+            decoration: BoxDecoration(
+              color: cs.primary.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.tune_rounded, color: cs.primary, size: 20),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _RepositoryHeader extends StatelessWidget {
-  const _RepositoryHeader();
+
+class _GradientHeader extends StatelessWidget {
+  const _GradientHeader({required this.cs, required this.tt});
+  final ColorScheme cs;
+  final TextTheme tt;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Row(
-      children: [
-        Container(
-          width: 44.w,
-          height: 44.w,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: colorScheme.outlineVariant.withOpacity(0.5),
-              width: 1.5,
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [cs.primary, cs.primary.withOpacity(0.75)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: cs.primary.withOpacity(0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 56.w,
+            height: 56.w,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(16.r),
             ),
-            color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            child: Icon(
+              Icons.medical_information_rounded,
+              color: Colors.white,
+              size: 30.w,
+            ),
           ),
-          child: Icon(
-            Icons.account_circle_rounded,
-            color: colorScheme.onSurfaceVariant,
-            size: 28.w,
-          ),
-        ),
-
-        SizedBox(width: 12.w),
-
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Internal Repository',
-                style: textTheme.titleMedium?.copyWith(
-                  color: colorScheme.onSurface,
-                  fontWeight: FontWeight.w600,
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Internal Repository',
+                  style: tt.titleMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 18.sp,
+                  ),
                 ),
-              ),
-              SizedBox(height: 2.h),
-              Text(
-                'Patient records from inTEAM Health EMR System',
-                style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant.withOpacity(0.7),
+                SizedBox(height: 4.h),
+                Text(
+                  'Patient records from inTEAM Health EMR',
+                  style: tt.bodySmall?.copyWith(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 12.sp,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class _SearchBar extends StatelessWidget {
-  const _SearchBar({
+class _LocationBanner extends StatelessWidget {
+  const _LocationBanner({
+    required this.cs,
+    required this.message,
+    required this.icon,
+    this.isSuccess = false,
+    this.isLoading = false,
+    this.actionLabel,
+    this.onAction,
+  });
+
+  final ColorScheme cs;
+  final String message;
+  final IconData icon;
+  final bool isSuccess;
+  final bool isLoading;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isSuccess
+        ? cs.outline
+        : (isLoading ? cs.secondary : cs.error);
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          if (isLoading)
+            SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation(color),
+              ),
+            )
+          else
+            Icon(icon, color: color, size: 18),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                color: color,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          if (actionLabel != null)
+            GestureDetector(
+              onTap: onAction,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  actionLabel!,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GlassmorphicSearchBar extends StatelessWidget {
+  const _GlassmorphicSearchBar({
     required this.controller,
     required this.onChanged,
+    required this.cs,
   });
 
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
+  final ColorScheme cs;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withOpacity(0.25),
-        borderRadius: BorderRadius.circular(12),
+        color: cs.surfaceContainerHighest.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: colorScheme.outlineVariant.withOpacity(0.3),
-          width: 1,
+          color: cs.outlineVariant.withOpacity(0.15),
+          width: 1.2,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: TextField(
         controller: controller,
         onChanged: onChanged,
-        style: TextStyle(
-          color: colorScheme.onSurface,
-          fontSize: 14.sp,
-        ),
+        style: TextStyle(color: cs.onSurface, fontSize: 14.sp),
         decoration: InputDecoration(
-          hintText: 'Search internal records...',
+          hintText: 'Search by name, ID, or diagnosis...',
           hintStyle: TextStyle(
-            color: colorScheme.onSurfaceVariant.withOpacity(0.5),
-            fontSize: 14.sp,
+            color: cs.onSurfaceVariant.withOpacity(0.45),
+            fontSize: 13.sp,
           ),
           prefixIcon: Icon(
-            Icons.search,
-            color: colorScheme.onSurfaceVariant.withOpacity(0.5),
-            size: 20,
+            Icons.search_rounded,
+            color: cs.primary.withOpacity(0.6),
+            size: 22,
           ),
+          suffixIcon: controller.text.isNotEmpty
+              ? IconButton(
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: cs.onSurfaceVariant.withOpacity(0.5),
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    controller.clear();
+                    onChanged('');
+                  },
+                )
+              : null,
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
             horizontal: 16.w,
@@ -300,45 +447,67 @@ class _SearchBar extends StatelessWidget {
   }
 }
 
-class _RecordsTitle extends StatelessWidget {
-  const _RecordsTitle({required this.count});
+
+class _RecordsHeader extends StatelessWidget {
+  const _RecordsHeader({required this.count, required this.cs});
   final int count;
+  final ColorScheme cs;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Internal Patient Records\n($count)',
-          style: textTheme.titleSmall?.copyWith(
-            color: colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
-            height: 1.4,
+          'Patient Records',
+          style: TextStyle(
+            color: cs.onSurface,
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w700,
           ),
         ),
-
+        SizedBox(width: 8.w),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
           decoration: BoxDecoration(
-            color: colorScheme.primary.withOpacity(0.15),
+            color: cs.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: colorScheme.primary.withOpacity(0.3),
-              width: 1,
-            ),
           ),
           child: Text(
-            'Internal\nSystem',
-            textAlign: TextAlign.center,
-            style: textTheme.labelSmall?.copyWith(
-              color: colorScheme.primary,
-              fontWeight: FontWeight.w600,
-              height: 1.3,
+            '$count',
+            style: TextStyle(
+              color: cs.primary,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w700,
             ),
+          ),
+        ),
+        const Spacer(),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 5.h),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                cs.primary.withOpacity(0.12),
+                cs.primary.withOpacity(0.06),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: cs.primary.withOpacity(0.2)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.verified_rounded, color: cs.primary, size: 14),
+              SizedBox(width: 4.w),
+              Text(
+                'EMR System',
+                style: TextStyle(
+                  color: cs.primary,
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -347,137 +516,293 @@ class _RecordsTitle extends StatelessWidget {
 }
 
 class _PatientCard extends StatelessWidget {
-  const _PatientCard({required this.patient});
+  const _PatientCard({
+    required this.patient,
+    required this.index,
+    required this.distanceText,
+    required this.cs,
+    required this.tt,
+  });
+
   final PatientRecord patient;
+  final int index;
+  final String distanceText;
+  final ColorScheme cs;
+  final TextTheme tt;
+
+  Color _diagnosisColor() {
+    switch (patient.diagnosis.toLowerCase()) {
+      case 'hypertension':
+      case 'cardiac arrhythmia':
+        return const Color(0xFFEF4444);
+      case 'diabetes type 2':
+        return const Color(0xFFF59E0B);
+      case 'asthma':
+        return const Color(0xFF3B82F6);
+      case 'chronic back pain':
+        return const Color(0xFF8B5CF6);
+      default:
+        return const Color(0xFF6B7280);
+    }
+  }
+
+  /// Deterministic avatar color from name
+  Color _avatarColor() {
+    final colors = [
+      const Color(0xFF176765),
+      const Color(0xFF1976D2),
+      const Color(0xFF6366F1),
+      const Color(0xFFEC4899),
+      const Color(0xFFF59E0B),
+    ];
+    return colors[index % colors.length];
+  }
+
+  String _initials() {
+    final parts = patient.name.split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}';
+    }
+    return parts[0][0];
+  }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final diagColor = _diagnosisColor();
+    final avatarBg = _avatarColor();
 
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(14),
+        color: cs.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(
-          color: colorScheme.outlineVariant.withOpacity(0.25),
+          color: cs.outlineVariant.withOpacity(0.12),
           width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ─── Top row: Avatar + Name + Status dot ───
           Row(
             children: [
+              // Avatar circle with gradient border
               Container(
-                width: 40.w,
-                height: 40.w,
+                width: 48.w,
+                height: 48.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: colorScheme.primary.withOpacity(0.5),
-                    width: 1.5,
+                  gradient: LinearGradient(
+                    colors: [avatarBg, avatarBg.withOpacity(0.6)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: avatarBg.withOpacity(0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-                child: Icon(
-                  Icons.person_outline_rounded,
-                  color: colorScheme.primary,
-                  size: 22.w,
+                child: Center(
+                  child: Text(
+                    _initials(),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
               ),
 
               SizedBox(width: 12.w),
 
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    patient.name,
-                    style: textTheme.titleSmall?.copyWith(
-                      color: colorScheme.onSurface,
-                      fontWeight: FontWeight.w600,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            patient.name,
+                            style: tt.titleSmall?.copyWith(
+                              color: cs.onSurface,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15.sp,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        // Status dot
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: diagColor,
+                            boxShadow: [
+                              BoxShadow(
+                                color: diagColor.withOpacity(0.4),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    patient.id,
-                    style: textTheme.bodySmall?.copyWith(
-                      color: colorScheme.primary.withOpacity(0.7),
-                      fontWeight: FontWeight.w500,
+                    SizedBox(height: 2.h),
+                    Text(
+                      patient.id,
+                      style: tt.bodySmall?.copyWith(
+                        color: cs.primary.withOpacity(0.7),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12.sp,
+                      ),
                     ),
+                  ],
+                ),
+              ),
+
+              // ─── Distance badge (top-right) ───
+              if (distanceText.isNotEmpty)
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.w,
+                    vertical: 5.h,
                   ),
-                ],
+                  decoration: BoxDecoration(
+                    color: cs.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: cs.primary.withOpacity(0.2)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.near_me_rounded, color: cs.primary, size: 13),
+                      SizedBox(width: 4.w),
+                      Text(
+                        distanceText,
+                        style: TextStyle(
+                          color: cs.primary,
+                          fontSize: 10.5.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+
+          SizedBox(height: 14.h),
+
+          // ─── Info chips row ───
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: [
+              _InfoChip(
+                icon: Icons.person_outline_rounded,
+                label: '${patient.age} yrs',
+                cs: cs,
+              ),
+              _InfoChip(
+                icon: patient.gender == 'Male'
+                    ? Icons.male_rounded
+                    : Icons.female_rounded,
+                label: patient.gender,
+                cs: cs,
+              ),
+              _InfoChip(
+                icon: Icons.calendar_today_rounded,
+                label: patient.lastVisit,
+                cs: cs,
               ),
             ],
           ),
 
           SizedBox(height: 12.h),
 
+          // ─── Diagnosis & Location row ───
           Row(
             children: [
-              _DetailItem(
-                icon: Icons.person_outline,
-                label: 'Age:',
-                value: '${patient.age}',
-                colorScheme: colorScheme,
-                textTheme: textTheme,
-              ),
-
-              SizedBox(width: 24.w),
-
-              _DetailItem(
-                label: 'Gender:',
-                value: patient.gender,
-                colorScheme: colorScheme,
-                textTheme: textTheme,
-                isBoldValue: true,
-              ),
-            ],
-          ),
-
-          SizedBox(height: 8.h),
-
-          Row(
-            children: [
-              _DetailItem(
-                icon: Icons.calendar_today_outlined,
-                label: 'Last\nVisit:',
-                value: patient.lastVisit,
-                colorScheme: colorScheme,
-                textTheme: textTheme,
-              ),
-
-              SizedBox(width: 16.w),
-
+              // Diagnosis chip
               Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '•  ',
-                      style: TextStyle(
-                        color: colorScheme.onSurfaceVariant.withOpacity(0.6),
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Diagnosis:',
-                          style: textTheme.labelSmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant.withOpacity(0.6),
-                          ),
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.w,
+                    vertical: 6.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: diagColor.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: diagColor.withOpacity(0.15)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: diagColor,
                         ),
-                        Text(
+                      ),
+                      SizedBox(width: 6.w),
+                      Flexible(
+                        child: Text(
                           patient.diagnosis,
-                          style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurface,
+                          style: TextStyle(
+                            color: diagColor,
+                            fontSize: 11.5.sp,
                             fontWeight: FontWeight.w600,
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              SizedBox(width: 8.w),
+
+              // Location chip
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: cs.surfaceContainerHighest.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.location_on_outlined,
+                      color: cs.onSurfaceVariant.withOpacity(0.6),
+                      size: 13,
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      patient.locationName,
+                      style: TextStyle(
+                        color: cs.onSurfaceVariant.withOpacity(0.7),
+                        fontSize: 10.5.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -490,51 +815,37 @@ class _PatientCard extends StatelessWidget {
   }
 }
 
-class _DetailItem extends StatelessWidget {
-  const _DetailItem({
-    this.icon,
-    required this.label,
-    required this.value,
-    required this.colorScheme,
-    required this.textTheme,
-    this.isBoldValue = false,
-  });
+class _InfoChip extends StatelessWidget {
+  const _InfoChip({required this.icon, required this.label, required this.cs});
 
-  final IconData? icon;
+  final IconData icon;
   final String label;
-  final String value;
-  final ColorScheme colorScheme;
-  final TextTheme textTheme;
-  final bool isBoldValue;
+  final ColorScheme cs;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (icon != null) ...[
-          Icon(
-            icon,
-            size: 14,
-            color: colorScheme.onSurfaceVariant.withOpacity(0.5),
-          ),
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: cs.outlineVariant.withOpacity(0.1)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: cs.onSurfaceVariant.withOpacity(0.6)),
           SizedBox(width: 4.w),
+          Text(
+            label,
+            style: TextStyle(
+              color: cs.onSurface.withOpacity(0.8),
+              fontSize: 11.5.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
-        Text(
-          label,
-          style: textTheme.labelSmall?.copyWith(
-            color: colorScheme.onSurfaceVariant.withOpacity(0.6),
-          ),
-        ),
-        SizedBox(width: 6.w),
-        Text(
-          value,
-          style: textTheme.bodySmall?.copyWith(
-            color: colorScheme.onSurface,
-            fontWeight: isBoldValue ? FontWeight.w700 : FontWeight.w600,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
